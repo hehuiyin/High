@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Huiyin(Cloris) He" />
+
+
+<title>Social Network Analysis</title>
+
+<script src="site_libs/header-attrs-2.7/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-sm-12 col-md-4 col-lg-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-sm-12 col-md-8 col-lg-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Social Network</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="index.html">Analysis</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Social Network Analysis</h1>
+<h4 class="author">Huiyin(Cloris) He</h4>
+<h4 class="date">3/22/2021</h4>
+
+</div>
+
+
+<div id="part-1.-subset-data" class="section level2">
+<h2>Part 1. Subset data</h2>
+<div id="delete-products-that-are-not-books-from-products-and-copurchase-files.-and-then-delete-the-books-with-salesrank150000-or-salesrank--1." class="section level5">
+<h5>Delete products that are not books from “products” and “copurchase” files. And then delete the books with salesrank&gt;150,000 or salesrank = -1.</h5>
+<pre class="r"><code>library(sqldf)</code></pre>
+<pre><code>## Loading required package: gsubfn</code></pre>
+<pre><code>## Loading required package: proto</code></pre>
+<pre><code>## Warning in doTryCatch(return(expr), name, parentenv, handler): unable to load shared object &#39;/Library/Frameworks/R.framework/Resources/modules//R_X11.so&#39;:
+##   dlopen(/Library/Frameworks/R.framework/Resources/modules//R_X11.so, 6): Library not loaded: /opt/X11/lib/libSM.6.dylib
+##   Referenced from: /Library/Frameworks/R.framework/Versions/3.6/Resources/modules/R_X11.so
+##   Reason: image not found</code></pre>
+<pre><code>## Could not load tcltk.  Will use slower R code instead.</code></pre>
+<pre><code>## Loading required package: RSQLite</code></pre>
+<pre><code>## Warning: package &#39;RSQLite&#39; was built under R version 3.6.2</code></pre>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.6.2</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(plyr)</code></pre>
+<pre><code>## ------------------------------------------------------------------------------</code></pre>
+<pre><code>## You have loaded plyr after dplyr - this is likely to cause problems.
+## If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+## library(plyr); library(dplyr)</code></pre>
+<pre><code>## ------------------------------------------------------------------------------</code></pre>
+<pre><code>## 
+## Attaching package: &#39;plyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:dplyr&#39;:
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize</code></pre>
+<pre class="r"><code>library(igraph)</code></pre>
+<pre><code>## Warning: package &#39;igraph&#39; was built under R version 3.6.2</code></pre>
+<pre><code>## 
+## Attaching package: &#39;igraph&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:dplyr&#39;:
+## 
+##     as_data_frame, groups, union</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     decompose, spectrum</code></pre>
+<pre><code>## The following object is masked from &#39;package:base&#39;:
+## 
+##     union</code></pre>
+<pre class="r"><code>#Read data
+product=read.csv(&#39;~/Documents/UCI/3. WINTER/BANA 277. CUST &amp; SOCIAL ANLYT/assignment 2. social network team assignment/products.csv&#39;)
+purchase=read.csv(&#39;~/Documents/UCI/3. WINTER/BANA 277. CUST &amp; SOCIAL ANLYT/assignment 2. social network team assignment/copurchase.csv&#39;)
+####1. filter data#### 
+#only &#39;Book&#39; with salesrank&lt;=150,000 and salesrank not= -1
+product1=product[product$group==&#39;Book&#39; &amp; product$salesrank&lt;=150000 &amp; product$salesrank!=-1,]
+purchase1=purchase[which(purchase$Target %in% product1$id),]
+purchase1=purchase1[which(purchase1$Source %in% product1$id),]</code></pre>
+</div>
+</div>
+<div id="part-2.-in-degree" class="section level2">
+<h2>Part 2. in-degree</h2>
+<div id="create-a-variable-named-in-degree-to-show-how-many-source-products-people-who-buy-target-products-buy." class="section level5">
+<h5>Create a variable named in-degree, to show how many “Source” products people who buy “Target” products buy.</h5>
+<pre class="r"><code>####2. in-degree####
+n=graph_from_data_frame(purchase1, directed=T) 
+indegree=degree(n, mode=&quot;in&quot;)</code></pre>
+</div>
+</div>
+<div id="part-3.-out-degree" class="section level2">
+<h2>Part 3. out-degree</h2>
+<div id="create-a-variable-named-out-degree-to-show-how-many-target-products-people-who-buy-source-products-also-buy." class="section level5">
+<h5>Create a variable named out-degree, to show how many “Target” products people who buy “Source” products also buy.</h5>
+<pre class="r"><code>####3. out-degree####
+outdegree=degree(n, mode=&quot;out&quot;)</code></pre>
+</div>
+</div>
+<div id="part-4.-subcomponent" class="section level2">
+<h2>Part 4. Subcomponent</h2>
+<div id="pick-up-one-of-the-products-in-case-there-are-multiple-with-highest-degree-in-degree-out-degree-and-find-its-subcomponent-all-the-products-that-are-connected-to-this-focal-product." class="section level5">
+<h5>Pick up one of the products (in case there are multiple) with highest degree (in-degree + out-degree), and find its subcomponent (all the products that are connected to this focal product).</h5>
+<pre class="r"><code>####4. Highest degree####
+alldegree=degree(n, mode=&quot;all&quot;)
+max(alldegree) #53</code></pre>
+<pre><code>## [1] 53</code></pre>
+<pre class="r"><code>#find out which id is the highest
+max=alldegree[which(alldegree==max(alldegree))]
+max</code></pre>
+<pre><code>## 4429   33 
+##   53   53</code></pre>
+<pre class="r"><code>#Source id=33 with highest degree of 53
+subc=subcomponent(n,&#39;33&#39;,mode=&#39;all&#39;)
+length(subc)</code></pre>
+<pre><code>## [1] 904</code></pre>
+<pre class="r"><code>#convert to a vector of ids
+subc=as_ids(subc)</code></pre>
+<p>There are 2 products with the highest degree of 53: product 33 (<em>Double Jeopardy (T Witches, 6)</em>) &amp; product 4429 (<em>Harley-Davidson Panheads, 1948-1965/M418</em>) and we picked the product 33 (<em>Double Jeopardy (T Witches, 6)</em>) for the following analysis based on its 904 subcomponents.</p>
+<pre class="r"><code>#subset subcomponent from the copurchase data
+sub=purchase1[purchase1$Source %in% subc|purchase1$Target %in% subc,]
+#subset subcomponent from the product data
+subid=product1[product1$id %in% subc,]</code></pre>
+</div>
+</div>
+<div id="part-5.-visualization" class="section level2">
+<h2>Part 5. Visualization</h2>
+<div id="visualize-the-subcomponent-using-igraph" class="section level5">
+<h5>Visualize the subcomponent using iGraph</h5>
+<pre class="r"><code>####5. visuals####
+subn=graph_from_data_frame(sub,directed=T) 
+#2nd way to do it: subn=subgraph(n,subc)
+E(subn)</code></pre>
+<pre><code>## + 1173/1173 edges from 2ff26e4 (vertex names):
+##  [1] 77  -&gt;422  130 -&gt;78   148 -&gt;302  187 -&gt;78   187 -&gt;321  187 -&gt;322 
+##  [7] 193 -&gt;224  224 -&gt;33   224 -&gt;193  321 -&gt;78   321 -&gt;187  321 -&gt;322 
+## [13] 322 -&gt;78   322 -&gt;187  322 -&gt;321  422 -&gt;77   422 -&gt;1644 556 -&gt;78  
+## [19] 577 -&gt;33   626 -&gt;33   724 -&gt;302  1051-&gt;302  1644-&gt;422  1644-&gt;5293
+## [25] 1817-&gt;976  1822-&gt;193  1822-&gt;724  1851-&gt;78   1971-&gt;193  2071-&gt;3155
+## [31] 2210-&gt;2279 2210-&gt;2285 2279-&gt;2210 2279-&gt;2326 2285-&gt;2330 2326-&gt;193 
+## [37] 2326-&gt;2210 2330-&gt;2343 2330-&gt;2345 2332-&gt;4140 2343-&gt;2285 2343-&gt;2330
+## [43] 2423-&gt;5410 2470-&gt;556  2501-&gt;3588 2505-&gt;2501 2558-&gt;33   2572-&gt;4184
+## [49] 2572-&gt;4185 2657-&gt;2658 2658-&gt;77   2806-&gt;2807 2807-&gt;302  2959-&gt;1673
+## [55] 3032-&gt;2558 3119-&gt;976  3191-&gt;2279 3217-&gt;4319 3306-&gt;2071 3306-&gt;4345
+## + ... omitted several edges</code></pre>
+<pre class="r"><code>V(subn)</code></pre>
+<pre><code>## + 904/904 vertices, named, from 2ff26e4:
+##   [1] 77     130    148    187    193    224    321    322    422    556   
+##  [11] 577    626    724    1051   1644   1817   1822   1851   1971   2071  
+##  [21] 2210   2279   2285   2326   2330   2332   2343   2423   2470   2501  
+##  [31] 2505   2558   2572   2657   2658   2806   2807   2959   3032   3119  
+##  [41] 3191   3217   3306   3427   3588   3670   3737   3861   3909   4002  
+##  [51] 4014   4038   4068   4099   4140   4174   4184   4185   4222   4223  
+##  [61] 4345   4429   4977   4993   4994   5018   5059   5163   5164   5293  
+##  [71] 5355   5388   5623   5638   5639   5655   5670   5821   5851   5875  
+##  [81] 6012   6014   6058   6059   6392   6411   6445   6546   6711   6713  
+##  [91] 6807   6808   6817   6942   7196   7198   7222   7233   7325   7376  
+## + ... omitted several vertices</code></pre>
+<pre class="r"><code>#diameter
+diameter(subn, directed=T)</code></pre>
+<pre><code>## [1] 9</code></pre>
+<pre class="r"><code>diam &lt;- get_diameter(subn, directed=T, weights=NA)
+class(diam)</code></pre>
+<pre><code>## [1] &quot;igraph.vs&quot;</code></pre>
+<pre class="r"><code>as.vector(diam)</code></pre>
+<pre><code>##  [1] 332 265 226 138 140 162  62  30  45 837</code></pre>
+<pre class="r"><code>#Final plot
+V(subn)$label &lt;- V(subn)$name
+V(subn)$degree &lt;- degree(subn)
+V(subn)$color&lt;-&quot;turquoise3&quot;
+V(subn)$color[diam]&lt;-&quot;gold1&quot;
+ecol &lt;- rep(&quot;gray80&quot;, ecount(subn))
+ecol[E(subn, path=diam)] &lt;- &quot;orange&quot; 
+
+# layout kamada.kawai
+plot(subn,
+     vertex.color=V(subn)$color,
+     vertex.size= V(subn)$degree*0.3,
+     edge.arrow.size=0.01,
+     vertex.label= ifelse(degree(subn) &gt; 20, V(subn)$label, NA),
+     edge.color=ecol,
+     layout=layout.kamada.kawai)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>The social graph shows two main groups, one with Id 33 in the center: <em>Double Jeopardy (T Witches, 6)</em>, another one represented with Id 4429 in the center: <em>Harley-Davidson Panheads, 1948-1965/M418</em>.</p>
+<p>Between 4429 and 33, there is a local bridge. It ties between two groups in a social graph that are the shortest route by which information might travel from those connected to one to those connected to the other. If the local bridge is removed, the distance between these two groups will increase. Also, the lack of the local bridge will significantly reduce the probability of co-purchasing behavior between the two groups and the frequency of products being bought.</p>
+<p>The diameter, shown in yellow in the graph, is the longest path we can find among all the shortest distances of the vertices. The diameter is 9 and the nodes within this path are Id 37895, 27936, 21584, 10889, 11080, 14111, 4429, 2501, 3588, and 6676.</p>
+<p>The size of the bubble is determined by how many connections they have with the other nodes. The larger the bubble, the more nodes link to it. And thus, from the graph, we can see that Id 33 and 4429 are the two biggest nodes that have the most connections. The smaller nodes spread on the edges of the network indicate fewer connections. The number of connections between nodes show how strong the relationship between the nodes are. The nodes clustered in the middle of the graph have a stronger relationship while the nodes that are spread around the border with long ties show a weaker relationship. And those products with long ties which only have 1-2 edges can be easily separated from the whole network.</p>
+</div>
+</div>
+<div id="part-6.-statistics" class="section level2">
+<h2>Part 6. Statistics</h2>
+<div id="compute-various-statistics-about-this-network" class="section level5">
+<h5>Compute various statistics about this network</h5>
+<pre class="r"><code>####6. Statistics####
+
+# Degree Distribution (number of ties)
+newg_all_degree &lt;- degree(subn, mode=&quot;all&quot;)
+deg_dist&lt;- degree.distribution(subn,cumulative = FALSE, mode=&quot;all&quot;)
+plot(x=0:max(newg_all_degree), y=deg_dist,pch=19, cex=0.9,col=&quot;black&quot;, xlab=&quot;Degree&quot;, ylab=&quot;Frequency&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code>#density
+density=edge_density(subn, loops=F)
+density</code></pre>
+<pre><code>## [1] 0.001436951</code></pre>
+<pre class="r"><code>#check:ecount(subn)/(vcount(subn)*(vcount(subn)-1))
+
+# Node degrees
+deg &lt;- degree(subn, mode=&quot;all&quot;)
+hist(deg, xlab = &quot;number of degree&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
+<pre class="r"><code>  #centrality
+centr_d=centr_degree(subn)
+
+  # Closeness (centrality based on distance to others in the graph)
+  # Inverse of the node&#39;s average geodesic distance to others in the network
+closeness=closeness(subn, mode=&quot;all&quot;, weights=NA) 
+
+  # Betweenness (centrality based on a broker position connecting others)
+  # (Number of geodesics that pass through the node or the edge)
+betweenness=betweenness(subn, directed=T, weights=NA)
+edge_betweenness=edge_betweenness(subn, directed=T, weights=NA)
+
+  #Hub scores (max outgoing links)
+hub=hub.score(subn)$vector
+
+  #authority scores (max incoming links)
+auth=authority.score(subn)$vector
+
+#create a table for stats
+id=V(subn)$name
+stat &lt;- as.data.frame(id)
+stat &lt;- stat%&gt;%
+  mutate(degree = degree(subn, mode=&quot;in&quot;), closeness = closeness, betweenness = betweenness,
+         hub= hub, authority = auth)
+head(stat)</code></pre>
+<pre><code>##    id degree    closeness betweenness          hub    authority
+## 1  77      3 9.045681e-05          12 2.239872e-16 4.449831e-17
+## 2 130      1 1.077935e-04           1 5.531568e-04 2.473186e-17
+## 3 148      1 1.009897e-04           2 3.592652e-05 2.567663e-17
+## 4 187      3 1.076774e-04           2 5.989914e-04 2.431071e-05
+## 5 193     10 1.414227e-04          40 3.880532e-16 2.317514e-02
+## 6 224      2 1.496110e-04          31 9.836847e-01 5.135327e-17</code></pre>
+</div>
+</div>
+<div id="part-7.-new-variables" class="section level2">
+<h2>Part 7. New variables</h2>
+<div id="create-a-group-of-variables-containing-the-information-of-neighbors-that-point-to-focal-products." class="section level5">
+<h5>Create a group of variables containing the information of neighbors that “point to” focal products.</h5>
+<pre class="r"><code>####7. Neighbors####
+  #reorder table
+subid=subid[match(V(subn)$name,subid$id),]
+
+  #calculate the means
+for (i in 1:length(subid$id)){
+  nghb = neighbors(subn,i, mode=&quot;in&quot;)
+  #filter neighbor in product data
+  nghb=as_ids(nghb)
+  ngnb1=product1[product1$id %in% nghb,]
+  
+  #a. Neighbors’ mean rating (nghb_mn_rating)
+  nghb_mn_rating=mean(ngnb1$rating)
+  subid$nghb_mn_rating[i]=nghb_mn_rating 
+  
+  #b.   Neighbors’ mean salesrank (nghb_mn_salesrank)
+  nghb_mn_salesrank=mean(ngnb1$salesrank) 
+  subid$nghb_mn_salesrank[i]=nghb_mn_salesrank 
+  
+  #c. Neighbors’ mean number of reviews (nghb_mn_review_cnt)
+  nghb_mn_review_cnt=mean(ngnb1$review_cnt)
+  subid$nghb_mn_review_cnt[i]=nghb_mn_review_cnt 
+}
+
+#new variables
+mean &lt;- sub %&gt;%
+  group_by(sub$Target)%&gt;%
+  inner_join(subid, by=c(&#39;Source&#39;=&#39;id&#39;))%&gt;%
+  summarise(nghb_mn_rating = mean(rating),nghb_mn_salesrank = mean(salesrank),
+            nghb_mn_review_cnt = mean(review_cnt))</code></pre>
+</div>
+</div>
+<div id="part-8.-poisson-regression" class="section level2">
+<h2>Part 8. Poisson Regression</h2>
+<div id="fit-a-poisson-regression-to-predict-salesrank-of-all-the-books-in-this-subcomponent-using-products-own-information-and-their-neighbors-information." class="section level5">
+<h5>Fit a Poisson regression to predict salesrank of all the books in this subcomponent using products’ own information and their neighbor’s information.</h5>
+<pre class="r"><code>####8. Poisson Regression####
+
+#adding in and outdegree to the data
+#make sure the same order
+
+#adding in and outdegree to the data
+for (i in 1:nrow(subid)){
+  subid$outdegree[i]=as.vector(degree(subn, mode=&quot;out&quot;))[i]
+  subid$indegree[i]=as.vector(degree(subn, mode=&quot;in&quot;))[i]
+}
+
+  #merge data
+model=merge(subid,stat,by=&#39;id&#39;)
+
+  #regression model
+final=glm(salesrank ~ review_cnt + downloads + rating
+          +closeness+betweenness+hub+authority
+          +indegree+outdegree
+          +nghb_mn_rating+nghb_mn_review_cnt+nghb_mn_salesrank,
+          family=&quot;poisson&quot;, data=model)
+summary(final)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = salesrank ~ review_cnt + downloads + rating + closeness + 
+##     betweenness + hub + authority + indegree + outdegree + nghb_mn_rating + 
+##     nghb_mn_review_cnt + nghb_mn_salesrank, family = &quot;poisson&quot;, 
+##     data = model)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -363.25  -160.45    -7.61   122.01   519.58  
+## 
+## Coefficients:
+##                      Estimate Std. Error   z value Pr(&gt;|z|)    
+## (Intercept)         1.119e+01  1.108e-03 10096.697   &lt;2e-16 ***
+## review_cnt         -2.868e-02  1.877e-04  -152.749   &lt;2e-16 ***
+## downloads           2.457e-02  1.879e-04   130.759   &lt;2e-16 ***
+## rating             -7.061e-03  1.098e-04   -64.314   &lt;2e-16 ***
+## closeness          -1.789e+01  7.874e+00    -2.272   0.0231 *  
+## betweenness        -7.349e-04  1.111e-05   -66.157   &lt;2e-16 ***
+## hub                 2.452e-01  8.593e-04   285.400   &lt;2e-16 ***
+## authority           1.895e-01  4.754e-03    39.861   &lt;2e-16 ***
+## indegree            2.801e-03  6.819e-05    41.069   &lt;2e-16 ***
+## outdegree           5.646e-02  2.057e-04   274.476   &lt;2e-16 ***
+## nghb_mn_rating     -9.723e-03  1.253e-04   -77.613   &lt;2e-16 ***
+## nghb_mn_review_cnt  7.386e-04  1.969e-06   375.165   &lt;2e-16 ***
+## nghb_mn_salesrank   2.057e-07  4.498e-09    45.733   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 16968896  on 517  degrees of freedom
+## Residual deviance: 15315200  on 505  degrees of freedom
+##   (386 observations deleted due to missingness)
+## AIC: 15321778
+## 
+## Number of Fisher Scoring iterations: 5</code></pre>
+<p>From the above chart, we can see that all the variables’ p-values are less than alpha (assuming alpha = 0.05). Therefore, we can conclude that all the variables are significant to our model. Additionally, since the Poisson Regression coefficients are given on log scale, we need to convert them back in order to interpret appropriately.</p>
+<pre class="r"><code>#exp of coefficients
+as.data.frame(exp(final$coefficients))</code></pre>
+<pre><code>##                    exp(final$coefficients)
+## (Intercept)                   7.254152e+04
+## review_cnt                    9.717321e-01
+## downloads                     1.024869e+00
+## rating                        9.929642e-01
+## closeness                     1.704536e-08
+## betweenness                   9.992654e-01
+## hub                           1.277931e+00
+## authority                     1.208656e+00
+## indegree                      1.002805e+00
+## outdegree                     1.058080e+00
+## nghb_mn_rating                9.903241e-01
+## nghb_mn_review_cnt            1.000739e+00
+## nghb_mn_salesrank             1.000000e+00</code></pre>
+<p>Salesrank represents the rankings of book sales and therefore, the lower the rank number, the better the sales. With the increasing of downloads, hub_score1, authority_score1, in_degree_sub, out_degree_sub, nghb_mn_salesrank, nghb_mn_review_cnt, Salesrank will also increase but it means less sales of the books. And the increase of Review_cnt, rating, closeness, betweenness, nghb_mn_rating will lead to decrease of Salesrank which means more sales of the books and thus, potentially more revenue to the company.</p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = false;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

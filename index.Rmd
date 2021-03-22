@@ -1,0 +1,236 @@
+---
+title: "Social Network Analysis"
+author: "Huiyin(Cloris) He"
+date: "3/22/2021"
+output: 
+  html_document:
+    toc: True
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+
+## Part 1. Subset data
+##### Delete products that are not books from “products” and “copurchase” files. And then delete the books with salesrank>150,000 or salesrank = -1.
+
+```{R}
+library(sqldf)
+library(dplyr)
+library(plyr)
+library(igraph)
+
+#Read data
+product=read.csv('~/Documents/UCI/3. WINTER/BANA 277. CUST & SOCIAL ANLYT/assignment 2. social network team assignment/products.csv')
+purchase=read.csv('~/Documents/UCI/3. WINTER/BANA 277. CUST & SOCIAL ANLYT/assignment 2. social network team assignment/copurchase.csv')
+####1. filter data#### 
+#only 'Book' with salesrank<=150,000 and salesrank not= -1
+product1=product[product$group=='Book' & product$salesrank<=150000 & product$salesrank!=-1,]
+purchase1=purchase[which(purchase$Target %in% product1$id),]
+purchase1=purchase1[which(purchase1$Source %in% product1$id),]
+```
+
+## Part 2. in-degree
+##### Create a variable named in-degree, to show how many “Source” products people who buy “Target” products buy.
+
+```{R}
+####2. in-degree####
+n=graph_from_data_frame(purchase1, directed=T) 
+indegree=degree(n, mode="in")
+```
+
+## Part 3. out-degree
+##### Create a variable named out-degree, to show how many “Target” products people who buy “Source” products also buy.
+
+```{R}
+####3. out-degree####
+outdegree=degree(n, mode="out")
+```
+
+## Part 4. Subcomponent
+##### Pick up one of the products (in case there are multiple) with highest degree (in-degree + out-degree), and find its subcomponent (all the products that are connected to this focal product).
+
+```{R}
+####4. Highest degree####
+alldegree=degree(n, mode="all")
+max(alldegree) #53
+
+#find out which id is the highest
+max=alldegree[which(alldegree==max(alldegree))]
+max
+
+#Source id=33 with highest degree of 53
+subc=subcomponent(n,'33',mode='all')
+length(subc)
+#convert to a vector of ids
+subc=as_ids(subc)
+```
+
+There are 2 products with the highest degree of 53: product 33 (*Double Jeopardy (T Witches, 6)*) & product 4429 (*Harley-Davidson Panheads, 1948-1965/M418*) and we picked the product 33 (*Double Jeopardy (T Witches, 6)*) for the following analysis based on its 904 subcomponents.
+
+```{R}
+#subset subcomponent from the copurchase data
+sub=purchase1[purchase1$Source %in% subc|purchase1$Target %in% subc,]
+#subset subcomponent from the product data
+subid=product1[product1$id %in% subc,]
+```
+
+## Part 5. Visualization 
+##### Visualize the subcomponent using iGraph
+
+```{R}
+####5. visuals####
+subn=graph_from_data_frame(sub,directed=T) 
+#2nd way to do it: subn=subgraph(n,subc)
+E(subn)
+V(subn)
+
+#diameter
+diameter(subn, directed=T)
+diam <- get_diameter(subn, directed=T, weights=NA)
+class(diam)
+as.vector(diam)
+
+#Final plot
+V(subn)$label <- V(subn)$name
+V(subn)$degree <- degree(subn)
+V(subn)$color<-"turquoise3"
+V(subn)$color[diam]<-"gold1"
+ecol <- rep("gray80", ecount(subn))
+ecol[E(subn, path=diam)] <- "orange" 
+
+# layout kamada.kawai
+plot(subn,
+     vertex.color=V(subn)$color,
+     vertex.size= V(subn)$degree*0.3,
+     edge.arrow.size=0.01,
+     vertex.label= ifelse(degree(subn) > 20, V(subn)$label, NA),
+     edge.color=ecol,
+     layout=layout.kamada.kawai)
+```
+
+The social graph shows two main groups, one with Id 33 in the center: *Double Jeopardy (T Witches, 6)*, another one represented with Id 4429 in the center: *Harley-Davidson Panheads, 1948-1965/M418*.
+
+Between 4429 and 33, there is a local bridge. It ties between two groups in a social graph that are the shortest route by which information might travel from those connected to one to those connected to the other. If the local bridge is removed, the distance between these two groups will increase. Also, the lack of the local bridge will significantly reduce the probability of co-purchasing behavior between the two groups and the frequency of products being bought.
+
+The diameter, shown in yellow in the graph, is the longest path we can find among all the shortest distances of the vertices. The diameter is 9 and the nodes within this path are Id 37895, 27936, 21584, 10889, 11080, 14111, 4429, 2501, 3588, and 6676.
+
+The size of the bubble is determined by how many connections they have with the other nodes. The larger the bubble, the more nodes link to it. And thus, from the graph, we can see that Id 33 and 4429 are the two biggest nodes that have the most connections. The smaller nodes spread on the edges of the network indicate fewer connections. The number of connections between nodes show how strong the relationship between the nodes are. The nodes clustered in the middle of the graph have a stronger relationship while the nodes that are spread around the border with long ties show a weaker relationship. And those products with long ties which only have 1-2 edges can be easily separated from the whole network.
+
+## Part 6. Statistics
+##### Compute various statistics about this network 
+
+```{R}
+####6. Statistics####
+
+# Degree Distribution (number of ties)
+newg_all_degree <- degree(subn, mode="all")
+deg_dist<- degree.distribution(subn,cumulative = FALSE, mode="all")
+plot(x=0:max(newg_all_degree), y=deg_dist,pch=19, cex=0.9,col="black", xlab="Degree", ylab="Frequency")
+
+#density
+density=edge_density(subn, loops=F)
+density
+#check:ecount(subn)/(vcount(subn)*(vcount(subn)-1))
+
+# Node degrees
+deg <- degree(subn, mode="all")
+hist(deg, xlab = "number of degree")
+
+  #centrality
+centr_d=centr_degree(subn)
+
+  # Closeness (centrality based on distance to others in the graph)
+  # Inverse of the node's average geodesic distance to others in the network
+closeness=closeness(subn, mode="all", weights=NA) 
+
+  # Betweenness (centrality based on a broker position connecting others)
+  # (Number of geodesics that pass through the node or the edge)
+betweenness=betweenness(subn, directed=T, weights=NA)
+edge_betweenness=edge_betweenness(subn, directed=T, weights=NA)
+
+  #Hub scores (max outgoing links)
+hub=hub.score(subn)$vector
+
+  #authority scores (max incoming links)
+auth=authority.score(subn)$vector
+
+#create a table for stats
+id=V(subn)$name
+stat <- as.data.frame(id)
+stat <- stat%>%
+  mutate(degree = degree(subn, mode="in"), closeness = closeness, betweenness = betweenness,
+         hub= hub, authority = auth)
+head(stat)
+```
+
+## Part 7. New variables
+##### Create a group of variables containing the information of neighbors that “point to” focal products.
+
+```{R}
+####7. Neighbors####
+  #reorder table
+subid=subid[match(V(subn)$name,subid$id),]
+
+  #calculate the means
+for (i in 1:length(subid$id)){
+  nghb = neighbors(subn,i, mode="in")
+  #filter neighbor in product data
+  nghb=as_ids(nghb)
+  ngnb1=product1[product1$id %in% nghb,]
+  
+  #a. Neighbors’ mean rating (nghb_mn_rating)
+  nghb_mn_rating=mean(ngnb1$rating)
+  subid$nghb_mn_rating[i]=nghb_mn_rating 
+  
+  #b.	Neighbors’ mean salesrank (nghb_mn_salesrank)
+  nghb_mn_salesrank=mean(ngnb1$salesrank) 
+  subid$nghb_mn_salesrank[i]=nghb_mn_salesrank 
+  
+  #c. Neighbors’ mean number of reviews (nghb_mn_review_cnt)
+  nghb_mn_review_cnt=mean(ngnb1$review_cnt)
+  subid$nghb_mn_review_cnt[i]=nghb_mn_review_cnt 
+}
+
+#new variables
+mean <- sub %>%
+  group_by(sub$Target)%>%
+  inner_join(subid, by=c('Source'='id'))%>%
+  summarise(nghb_mn_rating = mean(rating),nghb_mn_salesrank = mean(salesrank),
+            nghb_mn_review_cnt = mean(review_cnt))
+```
+
+## Part 8. Poisson Regression
+##### Fit a Poisson regression to predict salesrank of all the books in this subcomponent using products’ own information and their neighbor’s information.
+
+```{R}
+####8. Poisson Regression####
+
+#adding in and outdegree to the data
+#make sure the same order
+
+#adding in and outdegree to the data
+for (i in 1:nrow(subid)){
+  subid$outdegree[i]=as.vector(degree(subn, mode="out"))[i]
+  subid$indegree[i]=as.vector(degree(subn, mode="in"))[i]
+}
+
+  #merge data
+model=merge(subid,stat,by='id')
+
+  #regression model
+final=glm(salesrank ~ review_cnt + downloads + rating
+          +closeness+betweenness+hub+authority
+          +indegree+outdegree
+          +nghb_mn_rating+nghb_mn_review_cnt+nghb_mn_salesrank,
+          family="poisson", data=model)
+summary(final)
+```
+
+From the above chart, we can see that all the variables’ p-values are less than alpha (assuming alpha = 0.05). Therefore, we can conclude that all the variables are significant to our model. Additionally, since the Poisson Regression coefficients are given on log scale, we need to convert them back in order to interpret appropriately.
+
+```{R}
+#exp of coefficients
+as.data.frame(exp(final$coefficients))
+```
+
+Salesrank represents the rankings of book sales and therefore, the lower the rank number, the better the sales. With the increasing of downloads, hub_score1, authority_score1, in_degree_sub, out_degree_sub, nghb_mn_salesrank, nghb_mn_review_cnt, Salesrank will also increase but it means less sales of the books. And the increase of Review_cnt, rating, closeness, betweenness, nghb_mn_rating will lead to decrease of Salesrank which means more sales of the books and thus, potentially more revenue to the company.
