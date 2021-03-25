@@ -12,16 +12,17 @@ output:
 
 ## Part 1. Subset data
 ##### Delete products that are not books from “products” and “copurchase” files. And then delete the books with salesrank>150,000 or salesrank = -1.
+```{r,include=FALSE}
+#Read data
+product=read.csv('~/Documents/UCI/3. WINTER/BANA 277. CUST & SOCIAL ANLYT/assignment 2. social network team assignment/products.csv')
+purchase=read.csv('~/Documents/UCI/3. WINTER/BANA 277. CUST & SOCIAL ANLYT/assignment 2. social network team assignment/copurchase.csv')
+```
 
-```{R}
+```{R message=FALSE, warning=FALSE}
 library(sqldf)
 library(dplyr)
 library(plyr)
 library(igraph)
-
-#Read data
-product=read.csv('~/Documents/UCI/3. WINTER/BANA 277. CUST & SOCIAL ANLYT/assignment 2. social network team assignment/products.csv')
-purchase=read.csv('~/Documents/UCI/3. WINTER/BANA 277. CUST & SOCIAL ANLYT/assignment 2. social network team assignment/copurchase.csv')
 ####1. filter data#### 
 #only 'Book' with salesrank<=150,000 and salesrank not= -1
 product1=product[product$group=='Book' & product$salesrank<=150000 & product$salesrank!=-1,]

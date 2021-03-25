@@ -353,54 +353,10 @@ div.tocify {
 <h2>Part 1. Subset data</h2>
 <div id="delete-products-that-are-not-books-from-products-and-copurchase-files.-and-then-delete-the-books-with-salesrank150000-or-salesrank--1." class="section level5">
 <h5>Delete products that are not books from “products” and “copurchase” files. And then delete the books with salesrank&gt;150,000 or salesrank = -1.</h5>
-<pre class="r"><code>library(sqldf)</code></pre>
-<pre><code>## Loading required package: gsubfn</code></pre>
-<pre><code>## Loading required package: proto</code></pre>
-<pre><code>## Warning in doTryCatch(return(expr), name, parentenv, handler): unable to load shared object &#39;/Library/Frameworks/R.framework/Resources/modules//R_X11.so&#39;:
-##   dlopen(/Library/Frameworks/R.framework/Resources/modules//R_X11.so, 6): Library not loaded: /opt/X11/lib/libSM.6.dylib
-##   Referenced from: /Library/Frameworks/R.framework/Versions/3.6/Resources/modules/R_X11.so
-##   Reason: image not found</code></pre>
-<pre><code>## Could not load tcltk.  Will use slower R code instead.</code></pre>
-<pre><code>## Loading required package: RSQLite</code></pre>
-<pre><code>## Warning: package &#39;RSQLite&#39; was built under R version 3.6.2</code></pre>
-<pre class="r"><code>library(dplyr)</code></pre>
-<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.6.2</code></pre>
-<pre><code>## 
-## Attaching package: &#39;dplyr&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
-## 
-##     filter, lag</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>library(plyr)</code></pre>
-<pre><code>## ------------------------------------------------------------------------------</code></pre>
-<pre><code>## You have loaded plyr after dplyr - this is likely to cause problems.
-## If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
-## library(plyr); library(dplyr)</code></pre>
-<pre><code>## ------------------------------------------------------------------------------</code></pre>
-<pre><code>## 
-## Attaching package: &#39;plyr&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:dplyr&#39;:
-## 
-##     arrange, count, desc, failwith, id, mutate, rename, summarise,
-##     summarize</code></pre>
-<pre class="r"><code>library(igraph)</code></pre>
-<pre><code>## Warning: package &#39;igraph&#39; was built under R version 3.6.2</code></pre>
-<pre><code>## 
-## Attaching package: &#39;igraph&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:dplyr&#39;:
-## 
-##     as_data_frame, groups, union</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
-## 
-##     decompose, spectrum</code></pre>
-<pre><code>## The following object is masked from &#39;package:base&#39;:
-## 
-##     union</code></pre>
-<pre class="r"><code>#Read data
-product=read.csv(&#39;~/Documents/UCI/3. WINTER/BANA 277. CUST &amp; SOCIAL ANLYT/assignment 2. social network team assignment/products.csv&#39;)
-purchase=read.csv(&#39;~/Documents/UCI/3. WINTER/BANA 277. CUST &amp; SOCIAL ANLYT/assignment 2. social network team assignment/copurchase.csv&#39;)
+<pre class="r"><code>library(sqldf)
+library(dplyr)
+library(plyr)
+library(igraph)
 ####1. filter data#### 
 #only &#39;Book&#39; with salesrank&lt;=150,000 and salesrank not= -1
 product1=product[product$group==&#39;Book&#39; &amp; product$salesrank&lt;=150000 &amp; product$salesrank!=-1,]
@@ -459,7 +415,7 @@ subid=product1[product1$id %in% subc,]</code></pre>
 subn=graph_from_data_frame(sub,directed=T) 
 #2nd way to do it: subn=subgraph(n,subc)
 E(subn)</code></pre>
-<pre><code>## + 1173/1173 edges from 2ff26e4 (vertex names):
+<pre><code>## + 1173/1173 edges from ff3cd69 (vertex names):
 ##  [1] 77  -&gt;422  130 -&gt;78   148 -&gt;302  187 -&gt;78   187 -&gt;321  187 -&gt;322 
 ##  [7] 193 -&gt;224  224 -&gt;33   224 -&gt;193  321 -&gt;78   321 -&gt;187  321 -&gt;322 
 ## [13] 322 -&gt;78   322 -&gt;187  322 -&gt;321  422 -&gt;77   422 -&gt;1644 556 -&gt;78  
@@ -472,7 +428,7 @@ E(subn)</code></pre>
 ## [55] 3032-&gt;2558 3119-&gt;976  3191-&gt;2279 3217-&gt;4319 3306-&gt;2071 3306-&gt;4345
 ## + ... omitted several edges</code></pre>
 <pre class="r"><code>V(subn)</code></pre>
-<pre><code>## + 904/904 vertices, named, from 2ff26e4:
+<pre><code>## + 904/904 vertices, named, from ff3cd69:
 ##   [1] 77     130    148    187    193    224    321    322    422    556   
 ##  [11] 577    626    724    1051   1644   1817   1822   1851   1971   2071  
 ##  [21] 2210   2279   2285   2326   2330   2332   2343   2423   2470   2501  
@@ -508,7 +464,7 @@ plot(subn,
      vertex.label= ifelse(degree(subn) &gt; 20, V(subn)$label, NA),
      edge.color=ecol,
      layout=layout.kamada.kawai)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>The social graph shows two main groups, one with Id 33 in the center: <em>Double Jeopardy (T Witches, 6)</em>, another one represented with Id 4429 in the center: <em>Harley-Davidson Panheads, 1948-1965/M418</em>.</p>
 <p>Between 4429 and 33, there is a local bridge. It ties between two groups in a social graph that are the shortest route by which information might travel from those connected to one to those connected to the other. If the local bridge is removed, the distance between these two groups will increase. Also, the lack of the local bridge will significantly reduce the probability of co-purchasing behavior between the two groups and the frequency of products being bought.</p>
 <p>The diameter, shown in yellow in the graph, is the longest path we can find among all the shortest distances of the vertices. The diameter is 9 and the nodes within this path are Id 37895, 27936, 21584, 10889, 11080, 14111, 4429, 2501, 3588, and 6676.</p>
@@ -525,7 +481,7 @@ plot(subn,
 newg_all_degree &lt;- degree(subn, mode=&quot;all&quot;)
 deg_dist&lt;- degree.distribution(subn,cumulative = FALSE, mode=&quot;all&quot;)
 plot(x=0:max(newg_all_degree), y=deg_dist,pch=19, cex=0.9,col=&quot;black&quot;, xlab=&quot;Degree&quot;, ylab=&quot;Frequency&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <pre class="r"><code>#density
 density=edge_density(subn, loops=F)
 density</code></pre>
@@ -535,7 +491,7 @@ density</code></pre>
 # Node degrees
 deg &lt;- degree(subn, mode=&quot;all&quot;)
 hist(deg, xlab = &quot;number of degree&quot;)</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-8-2.png" width="672" /></p>
 <pre class="r"><code>  #centrality
 centr_d=centr_degree(subn)
 
