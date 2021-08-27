@@ -18,7 +18,7 @@ There are two data files used in this project: “products.csv” and “copurch
   + Source: This is the focal product that was purchased 
   + Target: People who bought “Source” also purchased the Target product 
 
-## 
+## Analysis
 The analysis only focused on books with salesrank<=150,000 and salesrank is not -1. After data cleaning, we found out that there are 20,684 “Source” products people who buy “Target” products buy and 20,684 “Target” products people who buy “Source” products also buy. And we picked product 33 (Double Jeopardy (T*Witches, 6)) for the following analysis based on its 904 subcomponents since it has the highest degree of 53.
 
 Then we visualized the subcomponents:
